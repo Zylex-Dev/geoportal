@@ -162,6 +162,14 @@ document.addEventListener('DOMContentLoaded', function () {
             boundaryLayer
         ];
 
+        Logger.log('WMS layers created:', wmsLayers.length);
+        Logger.log('Layers configuration:', {
+            'industry': Object.keys(industryLayers),
+            'infrastructure': Object.keys(infrastructureLayers),
+            'natural': Object.keys(naturalLayers),
+            'boundary': boundaryLayer.get('title')
+        });
+
         // All layers for error handling
         const allLayers = [
             ...Object.values(baseLayers),
@@ -443,6 +451,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (closer) {
             closer.onclick = function () {
                 popup.setPosition(undefined);
+                popupElement.style.display = 'none';
                 closer.blur();
                 return false;
             };
@@ -463,8 +472,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const popupElement = document.getElementById('popup');
+
         // Click handler for identifying features
         function handleIdentifyClick(evt) {
+            Logger.log('Identify click handler called', identifyActive);
             if (identifyActive) {
                 showFeatureInfo(evt.pixel);
             }
@@ -472,6 +484,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Display feature info at a pixel
         function showFeatureInfo(pixel) {
+            Logger.log('Show feature info for pixel', pixel);
+            
             // Get the vector feature under the pixel
             const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
                 return feature;
@@ -484,6 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Get all visible WMS layers
             const visibleWmsLayers = wmsLayers.filter(layer => layer.getVisible());
+            Logger.log('Visible WMS layers:', visibleWmsLayers.length);
 
             if (visibleWmsLayers.length === 0) {
                 return;
@@ -517,6 +532,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         })
                         .then(data => {
                             const content = document.getElementById('popup-content');
+                            Logger.log('GetFeatureInfo response:', data);
 
                             if (data.features && data.features.length) {
                                 // Display feature info in popup
@@ -540,10 +556,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                 content.innerHTML = popupContent;
                                 popup.setPosition(coordinate);
+                                popupElement.style.display = 'block';
+                                Logger.log('Popup content updated and positioned');
+                            } else {
+                                Logger.log('No features found in response');
+                                popup.setPosition(undefined);
+                                popupElement.style.display = 'none';
                             }
                         })
                         .catch(error => {
                             Logger.error('Error fetching feature info:', error);
+                            popup.setPosition(undefined);
+                            popupElement.style.display = 'none';
                         });
 
                     break; // Exit once we've found a layer with data
@@ -551,7 +575,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (!foundLayer) {
+                Logger.log('No layer found for GetFeatureInfo');
                 popup.setPosition(undefined);
+                popupElement.style.display = 'none';
             }
         }
 
@@ -559,6 +585,7 @@ document.addEventListener('DOMContentLoaded', function () {
         identifyBtn.addEventListener('click', function () {
             identifyActive = !identifyActive;
             this.classList.toggle('active');
+            Logger.log('Identify tool ' + (identifyActive ? 'activated' : 'deactivated'));
 
             if (identifyActive) {
                 // Add the click handler when tool is active
@@ -566,6 +593,9 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 // Remove it when tool is deactivated
                 map.un('singleclick', handleIdentifyClick);
+                // Hide popup when deactivating the tool
+                popup.setPosition(undefined);
+                popupElement.style.display = 'none';
             }
         });
     }

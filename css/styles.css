@@ -46,7 +46,6 @@ main {
   bottom: 12px;
   left: -50px;
   min-width: 280px;
-  display: none;
 }
 
 .ol-popup:after,
