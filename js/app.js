@@ -1,763 +1,755 @@
-document.addEventListener('DOMContentLoaded', function() {
-  // Configuration
-  const DEBUG = true; // Включение логирования для отладки
-  const geoserverUrl = 'http://localhost:8080/geoserver/wms'; // Update with your GeoServer URL
-  const workspace = 'geoportal'; // Update with your workspace name
-  
-  if (DEBUG) {
-      console.log("Инициализация геопортала");
-      console.log("GeoServer URL:", geoserverUrl);
-      console.log("Workspace:", workspace);
-  }
-  
-  // Функция для проверки доступности GeoServer перед инициализацией карты
-  function checkGeoServer() {
-      return new Promise((resolve, reject) => {
-          if (DEBUG) console.log("Проверка доступности GeoServer...");
-          
-          fetch(geoserverUrl + '?SERVICE=WMS&REQUEST=GetCapabilities')
-              .then(response => {
-                  if (!response.ok) {
-                      throw new Error('Ошибка соединения с GeoServer: ' + response.status);
-                  }
-                  if (DEBUG) console.log("GeoServer доступен");
-                  return response.text();
-              })
-              .then(data => {
-                  if (DEBUG) console.log("GeoServer capabilities получены");
-                  resolve(true);
-              })
-              .catch(error => {
-                  console.error('Проблема с подключением к GeoServer:', error);
-                  reject(error);
-              });
-      });
-  }
-  
-  // Создаем индикатор загрузки
-  const loadingElement = document.createElement('div');
-  loadingElement.innerHTML = 'Проверка подключения к GeoServer...';
-  loadingElement.style.position = 'absolute';
-  loadingElement.style.top = '50%';
-  loadingElement.style.left = '50%';
-  loadingElement.style.transform = 'translate(-50%, -50%)';
-  loadingElement.style.padding = '10px';
-  loadingElement.style.background = 'rgba(255, 255, 255, 0.8)';
-  loadingElement.style.borderRadius = '5px';
-  loadingElement.style.zIndex = '1000';
-  document.getElementById('map').appendChild(loadingElement);
-  
-  // Проверяем GeoServer перед инициализацией карты
-  checkGeoServer()
-      .then(initMap)
-      .catch(error => {
-          loadingElement.innerHTML = 'Ошибка подключения к GeoServer:<br>' + error.message + 
-              '<br><br>Проверьте, что GeoServer запущен и доступен по адресу:<br>' + geoserverUrl;
-          loadingElement.style.color = 'red';
-          loadingElement.style.maxWidth = '80%';
-          loadingElement.style.textAlign = 'center';
-      });
-  
-  // Функция инициализации карты после проверки GeoServer
-  function initMap() {
-      if (DEBUG) console.log("Инициализация карты...");
-      loadingElement.innerHTML = 'Загрузка карты...';
-      
-      // Создаем контролы для карты
-      const controls = [];
-      
-      // Добавляем стандартные контролы
-      controls.push(new ol.control.Zoom());
-      controls.push(new ol.control.Rotate());
-      controls.push(new ol.control.Attribution());
-      
-      // Добавляем дополнительные контролы
-      controls.push(new ol.control.ScaleLine());
-      controls.push(new ol.control.ZoomSlider());
-      controls.push(new ol.control.FullScreen());
-      controls.push(new ol.control.MousePosition({
-          coordinateFormat: ol.coordinate.createStringXY(4),
-          projection: 'EPSG:4326',
-          className: 'custom-mouse-position',
-          target: document.getElementById('mouse-position')
-      }));
-      
-      // Initialize map
-      const map = new ol.Map({
-          target: 'map',
-          controls: controls,
-          view: new ol.View({
-              center: ol.proj.fromLonLat([60.6122, 55.1544]), // Center on Chelyabinsk region
-              zoom: 9
-          })
-      });
-      
-      // Base layers
-      const osmLayer = new ol.layer.Tile({
-          title: 'OpenStreetMap',
-          type: 'base',
-          visible: true,
-          source: new ol.source.OSM()
-      });
-      
-      const satelliteLayer = new ol.layer.Tile({
-          title: 'Satellite',
-          type: 'base',
-          visible: false,
-          source: new ol.source.XYZ({
-              url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-              attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer">ArcGIS</a>'
-          })
-      });
-      
-      const topoLayer = new ol.layer.Tile({
-          title: 'Topographic',
-          type: 'base',
-          visible: false,
-          source: new ol.source.XYZ({
-              url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-              attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer">ArcGIS</a>'
-          })
-      });
-      
-      // Слой границы Челябинской области - всегда видимый
-      const boundaryLayer = new ol.layer.Tile({
-          title: 'Boundary',
-          visible: true,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':boundary-polygon',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Слой осм-блайнд для ограничения видимости OSM в пределах области
-      const osmBlindLayer = new ol.layer.Tile({
-          title: 'OSM Blind',
-          visible: true, // по умолчанию включен
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':osm-blind',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Добавляем базовые слои
-      map.addLayer(osmLayer);
-      map.addLayer(satelliteLayer);
-      map.addLayer(topoLayer);
-      
-      // WMS Layers from GeoServer
-      // Industrial Areas Layer
-      const industrialAreasLayer = new ol.layer.Tile({
-          title: 'Industrial Areas',
-          visible: true,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':landuse_industrial',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Steel Mills Layer
-      const steelMillsLayer = new ol.layer.Tile({
-          title: 'Steel Mills',
-          visible: true,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':industrial_steel_mill',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Mines Layer
-      const minesLayer = new ol.layer.Tile({
-          title: 'Mines',
-          visible: false,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':industrial_mine',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Quarries Layer
-      const quarriesLayer = new ol.layer.Tile({
-          title: 'Quarries',
-          visible: false,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':landuse_quarry',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Chimneys Layer
-      const chimneysLayer = new ol.layer.Tile({
-          title: 'Chimneys',
-          visible: false,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':man_made_chimney',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Kilns Layer
-      const kilnsLayer = new ol.layer.Tile({
-          title: 'Kilns',
-          visible: false,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':man_made_kiln',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Railway Layer
-      const railwayLayer = new ol.layer.Tile({
-          title: 'Railways',
-          visible: false,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':railway-line',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Water Polygons Layer
-      const waterPolygonsLayer = new ol.layer.Tile({
-          title: 'Water Polygons',
-          visible: false,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':water-polygon',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Water Lines Layer
-      const waterLinesLayer = new ol.layer.Tile({
-          title: 'Water Lines',
-          visible: false,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':water-line',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Vegetation Layer
-      const vegetationLayer = new ol.layer.Tile({
-          title: 'Vegetation',
-          visible: false,
-          source: new ol.source.TileWMS({
-              url: geoserverUrl,
-              params: {
-                  'LAYERS': workspace + ':vegetation-polygon',
-                  'TILED': true,
-                  'VERSION': '1.1.1'
-              },
-              serverType: 'geoserver',
-              transition: 0
-          })
-      });
-      
-      // Добавление обработчиков ошибок для слоев
-      const layers = [
-          industrialAreasLayer, steelMillsLayer, minesLayer, quarriesLayer,
-          chimneysLayer, kilnsLayer, railwayLayer, waterPolygonsLayer,
-          waterLinesLayer, vegetationLayer, boundaryLayer, osmBlindLayer
-      ];
-      
-      if (DEBUG) {
-          layers.forEach(layer => {
-              const layerName = layer.get('title');
-              
-              layer.getSource().on('tileloaderror', function(event) {
-                  console.error(`Ошибка загрузки тайла для слоя "${layerName}"`, event);
-              });
-              
-              layer.getSource().on('tileloadend', function(event) {
-                  console.log(`Тайл успешно загружен для слоя "${layerName}"`);
-              });
-          });
-      }
-      
-      // Добавляем слои в особом порядке (сначала базовые, потом граница, потом все остальные)
-      // Граница всегда видима
-      map.addLayer(boundaryLayer);
-      
-      // OSM Blind слой для ограничения видимости OSM
-      map.addLayer(osmBlindLayer);
-      
-      // Добавляем остальные слои
-      map.addLayer(railwayLayer);
-      map.addLayer(chimneysLayer);
-      map.addLayer(kilnsLayer);
-      map.addLayer(waterLinesLayer);
-      map.addLayer(waterPolygonsLayer);
-      map.addLayer(steelMillsLayer);
-      map.addLayer(quarriesLayer);
-      map.addLayer(minesLayer);
-      map.addLayer(industrialAreasLayer);
-      map.addLayer(vegetationLayer);
-      
-      // Layer Switcher setup (connect the checkboxes to the layers)
-      // Industrial Areas
-      document.getElementById('layer-industrial-areas').addEventListener('change', function() {
-          industrialAreasLayer.setVisible(this.checked);
-      });
-      
-      // Steel Mills
-      document.getElementById('layer-steel-mills').addEventListener('change', function() {
-          steelMillsLayer.setVisible(this.checked);
-      });
-      
-      // Mines
-      document.getElementById('layer-mines').addEventListener('change', function() {
-          minesLayer.setVisible(this.checked);
-      });
-      
-      // Quarries
-      document.getElementById('layer-quarries').addEventListener('change', function() {
-          quarriesLayer.setVisible(this.checked);
-      });
-      
-      // Chimneys
-      document.getElementById('layer-chimneys').addEventListener('change', function() {
-          chimneysLayer.setVisible(this.checked);
-      });
-      
-      // Kilns
-      document.getElementById('layer-kilns').addEventListener('change', function() {
-          kilnsLayer.setVisible(this.checked);
-      });
-      
-      // Railways
-      document.getElementById('layer-railways').addEventListener('change', function() {
-          railwayLayer.setVisible(this.checked);
-      });
-      
-      // Water Polygons
-      document.getElementById('layer-water-polygons').addEventListener('change', function() {
-          waterPolygonsLayer.setVisible(this.checked);
-      });
-      
-      // Water Lines
-      document.getElementById('layer-water-lines').addEventListener('change', function() {
-          waterLinesLayer.setVisible(this.checked);
-      });
-      
-      // Vegetation
-      document.getElementById('layer-vegetation').addEventListener('change', function() {
-          vegetationLayer.setVisible(this.checked);
-      });
-      
-      // Функция для синхронизации состояния чекбоксов с видимостью слоев
-      function updateCheckboxes() {
-          document.getElementById('layer-industrial-areas').checked = industrialAreasLayer.getVisible();
-          document.getElementById('layer-steel-mills').checked = steelMillsLayer.getVisible();
-          document.getElementById('layer-mines').checked = minesLayer.getVisible();
-          document.getElementById('layer-quarries').checked = quarriesLayer.getVisible();
-          document.getElementById('layer-chimneys').checked = chimneysLayer.getVisible();
-          document.getElementById('layer-kilns').checked = kilnsLayer.getVisible();
-          document.getElementById('layer-railways').checked = railwayLayer.getVisible();
-          document.getElementById('layer-water-polygons').checked = waterPolygonsLayer.getVisible();
-          document.getElementById('layer-water-lines').checked = waterLinesLayer.getVisible();
-          document.getElementById('layer-vegetation').checked = vegetationLayer.getVisible();
-      }
-      
-      // Basemap selector
-      document.getElementById('basemap-selector').addEventListener('change', function() {
-          const value = this.value;
-          
-          // Отключаем все базовые слои
-          osmLayer.setVisible(false);
-          satelliteLayer.setVisible(false);
-          topoLayer.setVisible(false);
-          
-          // Включаем выбранный базовый слой
-          if (value === 'osm') {
-              osmLayer.setVisible(true);
-              osmBlindLayer.setVisible(true); // Включаем OSM Blind при выборе OSM
-          } else if (value === 'satellite') {
-              satelliteLayer.setVisible(true);
-              osmBlindLayer.setVisible(false);
-          } else if (value === 'topo') {
-              topoLayer.setVisible(true);
-              osmBlindLayer.setVisible(false);
-          } else if (value === 'boundary') {
-              // Для векторной карты особые настройки
-              osmBlindLayer.setVisible(false);
-              
-              // Включаем природные слои
-              waterPolygonsLayer.setVisible(true);
-              waterLinesLayer.setVisible(true);
-              vegetationLayer.setVisible(true);
-              
-              // Синхронизируем чекбоксы
-              updateCheckboxes();
-          }
-      });
-      
-      // Setup popup for feature info
-      const popup = new ol.Overlay({
-          element: document.getElementById('popup'),
-          positioning: 'bottom-center',
-          stopEvent: false,
-          offset: [0, -10]
-      });
-      map.addOverlay(popup);
-      
-      // Popup closer
-      const closer = document.getElementById('popup-closer');
-      if (closer) {
-          closer.onclick = function() {
-              popup.setPosition(undefined);
-              closer.blur();
-              return false;
-          };
-      }
-      
-      // Implement GetFeatureInfo for identify tool
-      function showFeatureInfo(pixel) {
-          const feature = map.forEachFeatureAtPixel(pixel, function(feature) {
-              return feature;
-          });
-          
-          // Get the WMS layers to query
-          const viewResolution = map.getView().getResolution();
-          const viewProjection = map.getView().getProjection();
-          const coordinate = map.getCoordinateFromPixel(pixel);
-          
-          // Collect all visible WMS layers
-          const visibleWmsLayers = [
-              industrialAreasLayer, steelMillsLayer, minesLayer, quarriesLayer, 
-              chimneysLayer, kilnsLayer, railwayLayer, waterPolygonsLayer, 
-              waterLinesLayer, vegetationLayer, boundaryLayer
-          ].filter(layer => layer.getVisible());
-          
-          if (visibleWmsLayers.length === 0) {
-              return;
-          }
-          
-          // Build URL for GeoServer WMS GetFeatureInfo request
-          let url;
-          let foundLayer = false;
-          
-          // Try each visible layer until we find information
-          for (const layer of visibleWmsLayers) {
-              const source = layer.getSource();
-              url = source.getFeatureInfoUrl(
-                  coordinate,
-                  viewResolution,
-                  viewProjection,
-                  {
-                      'INFO_FORMAT': 'application/json',
-                      'FEATURE_COUNT': 10
-                  }
-              );
-              
-              if (url) {
-                  foundLayer = true;
-                  if (DEBUG) console.log("Запрос GetFeatureInfo URL:", url);
-                  
-                  fetch(url)
-                      .then(response => {
-                          if (!response.ok) {
-                              throw new Error('HTTP error ' + response.status);
-                          }
-                          return response.json();
-                      })
-                      .then(data => {
-                          const content = document.getElementById('popup-content');
-                          
-                          if (data.features && data.features.length) {
-                              // Display feature info in popup
-                              let popupContent = '<div>';
-                              const feature = data.features[0];
-                              
-                              // Feature type/name
-                              popupContent += '<h5>' + layer.get('title') + '</h5>';
-                              
-                              // Properties table
-                              popupContent += '<table class="table table-sm">';
-                              for (const prop in feature.properties) {
-                                  if (prop !== 'bbox') { // Skip bounding box property
-                                      popupContent += '<tr>' +
-                                          '<th scope="row">' + prop + '</th>' +
-                                          '<td>' + feature.properties[prop] + '</td>' +
-                                          '</tr>';
-                                  }
-                              }
-                              popupContent += '</table></div>';
-                              
-                              content.innerHTML = popupContent;
-                              popup.setPosition(coordinate);
-                          }
-                          // Removed the problematic 'continue' statement
-                      })
-                      .catch(error => {
-                          console.error('Error fetching feature info:', error);
-                      });
-                  
-                  break; // Exit once we've found a layer with data
-              }
-          }
-          
-          if (!foundLayer) {
-              popup.setPosition(undefined);
-          }
-      }
-      
-      // Identify tool
-      let identifyActive = false;
-      
-      document.getElementById('tool-identify').addEventListener('click', function() {
-          identifyActive = !identifyActive;
-          this.classList.toggle('active');
-          
-          if (identifyActive) {
-              map.on('singleclick', function(evt) {
-                  if (identifyActive) {
-                      showFeatureInfo(evt.pixel);
-                  }
-              });
-          }
-      });
-      
-      // Measurement tool
-      let draw;
-      let measureActive = false;
-      
-      function addMeasurementInteraction() {
-          const source = new ol.source.Vector();
-          
-          const vector = new ol.layer.Vector({
-              source: source,
-              style: new ol.style.Style({
-                  fill: new ol.style.Fill({
-                      color: 'rgba(255, 255, 255, 0.2)'
-                  }),
-                  stroke: new ol.style.Stroke({
-                      color: '#ffcc33',
-                      width: 2
-                  }),
-                  image: new ol.style.Circle({
-                      radius: 7,
-                      fill: new ol.style.Fill({
-                          color: '#ffcc33'
-                      })
-                  })
-              })
-          });
-          
-          map.addLayer(vector);
-          
-          // Create measuring tooltips
-          const measureTooltipElement = document.createElement('div');
-          measureTooltipElement.className = 'tooltip tooltip-measure';
-          
-          const measureTooltip = new ol.Overlay({
-              element: measureTooltipElement,
-              offset: [0, -15],
-              positioning: 'bottom-center'
-          });
-          
-          map.addOverlay(measureTooltip);
-          
-          // Format length measurement
-          const formatLength = function(line) {
-              const length = ol.sphere.getLength(line);
-              let output;
-              
-              if (length > 1000) {
-                  output = (Math.round(length / 1000 * 100) / 100) + ' km';
-              } else {
-                  output = (Math.round(length * 100) / 100) + ' m';
-              }
-              
-              return output;
-          };
-          
-          // Format area measurement
-          const formatArea = function(polygon) {
-              const area = ol.sphere.getArea(polygon);
-              let output;
-              
-              if (area > 10000) {
-                  output = (Math.round(area / 1000000 * 100) / 100) + ' km²';
-              } else {
-                  output = (Math.round(area * 100) / 100) + ' m²';
-              }
-              
-              return output;
-          };
-          
-          // Create draw interaction for measurements
-          draw = new ol.interaction.Draw({
-              source: source,
-              type: 'LineString',
-              style: new ol.style.Style({
-                  fill: new ol.style.Fill({
-                      color: 'rgba(255, 255, 255, 0.2)'
-                  }),
-                  stroke: new ol.style.Stroke({
-                      color: 'rgba(0, 0, 0, 0.5)',
-                      lineDash: [10, 10],
-                      width: 2
-                  }),
-                  image: new ol.style.Circle({
-                      radius: 5,
-                      stroke: new ol.style.Stroke({
-                          color: 'rgba(0, 0, 0, 0.7)'
-                      }),
-                      fill: new ol.style.Fill({
-                          color: 'rgba(255, 255, 255, 0.2)'
-                      })
-                  })
-              })
-          });
-          
-          map.addInteraction(draw);
-          
-          let listener;
-          
-          // Start drawing
-          draw.on('drawstart', function(evt) {
-              const sketch = evt.feature;
-              
-              let tooltipCoord = evt.coordinate;
-              
-              listener = sketch.getGeometry().on('change', function(evt) {
-                  const geom = evt.target;
-                  let output;
-                  
-                  if (geom instanceof ol.geom.Polygon) {
-                      output = formatArea(geom);
-                      tooltipCoord = geom.getInteriorPoint().getCoordinates();
-                  } else if (geom instanceof ol.geom.LineString) {
-                      output = formatLength(geom);
-                      tooltipCoord = geom.getLastCoordinate();
-                  }
-                  
-                  measureTooltipElement.innerHTML = output;
-                  measureTooltip.setPosition(tooltipCoord);
-              });
-          });
-          
-          // End drawing
-          draw.on('drawend', function() {
-              measureTooltipElement.className = 'tooltip tooltip-static';
-              measureTooltip.setOffset([0, -7]);
-              
-              // Create a new tooltip for next measurement
-              measureTooltipElement = document.createElement('div');
-              measureTooltipElement.className = 'tooltip tooltip-measure';
-              
-              measureTooltip = new ol.Overlay({
-                  element: measureTooltipElement,
-                  offset: [0, -15],
-                  positioning: 'bottom-center'
-              });
-              
-              map.addOverlay(measureTooltip);
-              
-              ol.Observable.unByKey(listener);
-          });
-          
-          return function() {
-              map.removeInteraction(draw);
-              map.removeLayer(vector);
-              measureTooltipElement.parentNode.removeChild(measureTooltipElement);
-              map.removeOverlay(measureTooltip);
-          };
-      }
-      
-      let removeMeasurement;
-      
-      document.getElementById('tool-measure').addEventListener('click', function() {
-          measureActive = !measureActive;
-          this.classList.toggle('active');
-          
-          if (measureActive) {
-              removeMeasurement = addMeasurementInteraction();
-          } else if (removeMeasurement) {
-              removeMeasurement();
-          }
-      });
-      
-      // About button and modal
-      document.getElementById('about-btn').addEventListener('click', function() {
-          const aboutModal = new bootstrap.Modal(document.getElementById('aboutModal'));
-          aboutModal.show();
-      });
-      
-      // Удаление индикатора загрузки, когда карта готова
-      map.once('rendercomplete', function() {
-          if (loadingElement && loadingElement.parentNode) {
-              loadingElement.parentNode.removeChild(loadingElement);
-          }
-          if (DEBUG) console.log('Карта успешно отрендерена');
-      });
-      
-      // Инициализация начального состояния - для OpenStreetMap включаем osm_blind
-      osmBlindLayer.setVisible(true);
-  }
+document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
+
+    // Configuration
+    const CONFIG = {
+        debug: true,
+        geoserverUrl: 'http://localhost:8080/geoserver/wms',
+        workspace: 'geoportal',
+        // Default center coordinates for Chelyabinsk region
+        defaultCenter: [60.6122, 55.1544],
+        defaultZoom: 9
+    };
+
+    // Logger helper to handle debug messages
+    const Logger = {
+        log: function (message, ...args) {
+            if (CONFIG.debug) console.log(message, ...args);
+        },
+        error: function (message, ...args) {
+            console.error(message, ...args);
+        }
+    };
+
+    Logger.log("Инициализация геопортала");
+    Logger.log("GeoServer URL:", CONFIG.geoserverUrl);
+    Logger.log("Workspace:", CONFIG.workspace);
+
+    // Создаем индикатор загрузки
+    const loadingElement = document.createElement('div');
+    loadingElement.innerHTML = 'Проверка подключения к GeoServer...';
+    loadingElement.style.position = 'absolute';
+    loadingElement.style.top = '50%';
+    loadingElement.style.left = '50%';
+    loadingElement.style.transform = 'translate(-50%, -50%)';
+    loadingElement.style.padding = '10px';
+    loadingElement.style.background = 'rgba(255, 255, 255, 0.8)';
+    loadingElement.style.borderRadius = '5px';
+    loadingElement.style.zIndex = '1000';
+    document.getElementById('map').appendChild(loadingElement);
+
+    // Функция для проверки доступности GeoServer перед инициализацией карты
+    function checkGeoServer() {
+        return new Promise((resolve, reject) => {
+            Logger.log("Проверка доступности GeoServer...");
+
+            fetch(CONFIG.geoserverUrl + '?SERVICE=WMS&REQUEST=GetCapabilities')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка соединения с GeoServer: ' + response.status);
+                    }
+                    Logger.log("GeoServer доступен");
+                    return response.text();
+                })
+                .then(data => {
+                    Logger.log("GeoServer capabilities получены");
+                    resolve(true);
+                })
+                .catch(error => {
+                    Logger.error('Проблема с подключением к GeoServer:', error);
+                    reject(error);
+                });
+        });
+    }
+
+    // Проверяем GeoServer перед инициализацией карты
+    checkGeoServer()
+        .then(initMap)
+        .catch(error => {
+            loadingElement.innerHTML = 'Ошибка подключения к GeoServer:<br>' + error.message +
+                '<br><br>Проверьте, что GeoServer запущен и доступен по адресу:<br>' + CONFIG.geoserverUrl;
+            loadingElement.style.color = 'red';
+            loadingElement.style.maxWidth = '80%';
+            loadingElement.style.textAlign = 'center';
+        });
+
+    // Функция инициализации карты после проверки GeoServer
+    function initMap() {
+        Logger.log("Инициализация карты...");
+        loadingElement.innerHTML = 'Загрузка карты...';
+
+        // Создаем контролы для карты
+        const controls = createMapControls();
+
+        // Initialize map
+        const map = new ol.Map({
+            target: 'map',
+            controls: controls,
+            view: new ol.View({
+                center: ol.proj.fromLonLat(CONFIG.defaultCenter),
+                zoom: CONFIG.defaultZoom
+            })
+        });
+
+        // Create all map layers
+        const layers = createMapLayers();
+
+        // Add error handlers for debugging
+        if (CONFIG.debug) {
+            setupLayerErrorHandlers(layers.allLayers);
+        }
+
+        // Add all layers to map
+        addLayersToMap(map, layers);
+
+        // Setup UI controls
+        setupLayerControls(layers);
+        setupBaseMapSelector(map, layers);
+        setupPopupAndTools(map, layers);
+
+        // Remove loading indicator when map is ready
+        map.once('rendercomplete', function () {
+            if (loadingElement && loadingElement.parentNode) {
+                loadingElement.parentNode.removeChild(loadingElement);
+            }
+            Logger.log('Карта успешно отрендерена');
+        });
+    }
+
+    /**
+     * Creates map controls
+     */
+    function createMapControls() {
+        const controls = [];
+
+        // Add standard controls
+        controls.push(new ol.control.Zoom());
+        controls.push(new ol.control.Rotate());
+        controls.push(new ol.control.Attribution());
+
+        // Add additional controls
+        controls.push(new ol.control.ScaleLine());
+        controls.push(new ol.control.ZoomSlider());
+        controls.push(new ol.control.FullScreen());
+        controls.push(new ol.control.MousePosition({
+            coordinateFormat: ol.coordinate.createStringXY(4),
+            projection: 'EPSG:4326',
+            className: 'custom-mouse-position',
+            target: document.getElementById('mouse-position')
+        }));
+
+        return controls;
+    }
+
+    /**
+     * Creates all map layers
+     */
+    function createMapLayers() {
+        // Create base layers
+        const baseLayers = createBaseLayers();
+
+        // Create feature layers
+        const boundaryLayer = createWmsLayer('boundary-polygon', 'Boundary', true);
+        const industryLayers = createIndustryLayers();
+        const infrastructureLayers = createInfrastructureLayers();
+        const naturalLayers = createNaturalLayers();
+
+        // Group all WMS layers for feature info
+        const wmsLayers = [
+            ...Object.values(industryLayers),
+            ...Object.values(infrastructureLayers),
+            ...Object.values(naturalLayers),
+            boundaryLayer
+        ];
+
+        // All layers for error handling
+        const allLayers = [
+            ...Object.values(baseLayers),
+            ...wmsLayers
+        ];
+
+        return {
+            baseLayers,
+            boundaryLayer,
+            industryLayers,
+            infrastructureLayers,
+            naturalLayers,
+            wmsLayers,
+            allLayers
+        };
+    }
+
+    /**
+     * Creates base map layers
+     */
+    function createBaseLayers() {
+        return {
+            osm: new ol.layer.Tile({
+                title: 'OpenStreetMap',
+                type: 'base',
+                visible: true,
+                source: new ol.source.OSM()
+            }),
+            satellite: new ol.layer.Tile({
+                title: 'Satellite',
+                type: 'base',
+                visible: false,
+                source: new ol.source.XYZ({
+                    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer">ArcGIS</a>'
+                })
+            }),
+            topo: new ol.layer.Tile({
+                title: 'Topographic',
+                type: 'base',
+                visible: false,
+                source: new ol.source.XYZ({
+                    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+                    attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer">ArcGIS</a>'
+                })
+            })
+        };
+    }
+
+    /**
+     * Creates WMS layer helper
+     */
+    function createWmsLayer(layerName, title, visible = false) {
+        return new ol.layer.Tile({
+            title: title,
+            visible: visible,
+            source: new ol.source.TileWMS({
+                url: CONFIG.geoserverUrl,
+                params: {
+                    'LAYERS': CONFIG.workspace + ':' + layerName,
+                    'TILED': true,
+                    'VERSION': '1.1.1'
+                },
+                serverType: 'geoserver',
+                transition: 0
+            })
+        });
+    }
+
+    /**
+     * Creates industry layers
+     */
+    function createIndustryLayers() {
+        return {
+            industrialAreas: createWmsLayer('landuse_industrial', 'Industrial Areas', true),
+            steelMills: createWmsLayer('industrial_steel_mill', 'Steel Mills', true),
+            mines: createWmsLayer('industrial_mine', 'Mines', false),
+            quarries: createWmsLayer('landuse_quarry', 'Quarries', false),
+            chimneys: createWmsLayer('man_made_chimney', 'Chimneys', false),
+            kilns: createWmsLayer('man_made_kiln', 'Kilns', false)
+        };
+    }
+
+    /**
+     * Creates infrastructure layers
+     */
+    function createInfrastructureLayers() {
+        return {
+            railway: createWmsLayer('railway-line', 'Railways', false)
+        };
+    }
+
+    /**
+     * Creates natural feature layers
+     */
+    function createNaturalLayers() {
+        return {
+            vegetation: createWmsLayer('vegetation-polygon', 'Vegetation', false),
+            waterPolygons: createWmsLayer('water-polygon', 'Water Polygons', false),
+            waterLines: createWmsLayer('water-line', 'Water Lines', false),
+        };
+    }
+
+    /**
+     * Setup error handlers for layers
+     */
+    function setupLayerErrorHandlers(layers) {
+        layers.forEach(layer => {
+            const layerName = layer.get('title');
+
+            if (layer.getSource().on) {
+                layer.getSource().on('tileloaderror', function (event) {
+                    Logger.error(`Ошибка загрузки тайла для слоя "${layerName}"`, event);
+                });
+
+                layer.getSource().on('tileloadend', function () {
+                    Logger.log(`Тайл успешно загружен для слоя "${layerName}"`);
+                });
+            }
+        });
+    }
+
+    /**
+     * Add layers to map in the correct order
+     */
+    function addLayersToMap(map, layers) {
+        // Add base layers first
+        Object.values(layers.baseLayers).forEach(layer => map.addLayer(layer));
+
+        // Add natural layers
+        Object.values(layers.naturalLayers).forEach(layer => map.addLayer(layer));
+
+        // Add industry layers
+        Object.values(layers.industryLayers).forEach(layer => map.addLayer(layer));
+
+        // Add infrastructure layers
+        Object.values(layers.infrastructureLayers).forEach(layer => map.addLayer(layer));
+
+        // Add boundary layer last so it's always on top
+        map.addLayer(layers.boundaryLayer);
+    }
+
+    /**
+     * Setup layer checkbox controls
+     */
+    function setupLayerControls(layers) {
+        // Connect industry layer checkboxes
+        connectLayerToCheckbox('layer-industrial-areas', layers.industryLayers.industrialAreas);
+        connectLayerToCheckbox('layer-steel-mills', layers.industryLayers.steelMills);
+        connectLayerToCheckbox('layer-mines', layers.industryLayers.mines);
+        connectLayerToCheckbox('layer-quarries', layers.industryLayers.quarries);
+        connectLayerToCheckbox('layer-chimneys', layers.industryLayers.chimneys);
+        connectLayerToCheckbox('layer-kilns', layers.industryLayers.kilns);
+
+        // Connect infrastructure layer checkboxes
+        connectLayerToCheckbox('layer-railways', layers.infrastructureLayers.railway);
+
+        // Connect natural layer checkboxes
+        connectLayerToCheckbox('layer-water-polygons', layers.naturalLayers.waterPolygons);
+        connectLayerToCheckbox('layer-water-lines', layers.naturalLayers.waterLines);
+        connectLayerToCheckbox('layer-vegetation', layers.naturalLayers.vegetation);
+    }
+
+    /**
+     * Connect a layer to its checkbox
+     */
+    function connectLayerToCheckbox(checkboxId, layer) {
+        const checkbox = document.getElementById(checkboxId);
+        if (!checkbox) {
+            Logger.error(`Checkbox with ID "${checkboxId}" not found`);
+            return;
+        }
+
+        // Set initial checkbox state based on layer visibility
+        checkbox.checked = layer.getVisible();
+
+        // Add change event handler
+        checkbox.addEventListener('change', function () {
+            layer.setVisible(this.checked);
+        });
+    }
+
+    /**
+     * Setup basemap selector
+     */
+    function setupBaseMapSelector(map, layers) {
+        const selector = document.getElementById('basemap-selector');
+        if (!selector) {
+            Logger.error('Base map selector not found');
+            return;
+        }
+
+        selector.addEventListener('change', function () {
+            const value = this.value;
+
+            // Hide all base layers first
+            Object.values(layers.baseLayers).forEach(layer => layer.setVisible(false));
+
+            // Show the selected base layer
+            if (value === 'osm') {
+                layers.baseLayers.osm.setVisible(true);
+            } else if (value === 'satellite') {
+                layers.baseLayers.satellite.setVisible(true);
+            } else if (value === 'topo') {
+                layers.baseLayers.topo.setVisible(true);
+            } else if (value === 'boundary') {
+                // For vector map, show natural layers
+                Object.values(layers.naturalLayers).forEach(layer => layer.setVisible(true));
+
+                // Update checkboxes to reflect layer visibility
+                updateCheckboxes(layers.naturalLayers);
+            }
+        });
+    }
+
+    /**
+     * Update checkboxes to match layer visibility
+     */
+    function updateCheckboxes(naturalLayers) {
+        document.getElementById('layer-water-polygons').checked = naturalLayers.waterPolygons.getVisible();
+        document.getElementById('layer-water-lines').checked = naturalLayers.waterLines.getVisible();
+        document.getElementById('layer-vegetation').checked = naturalLayers.vegetation.getVisible();
+    }
+
+    /**
+     * Setup popup and tools
+     */
+    function setupPopupAndTools(map, layers) {
+        // Setup popup
+        const popup = setupPopup(map);
+
+        // Setup identify tool
+        setupIdentifyTool(map, popup, layers.wmsLayers);
+
+        // Setup measurement tool
+        setupMeasurementTool(map);
+
+        // Setup about button
+        setupAboutButton();
+    }
+
+    /**
+     * Setup the About button and modal
+     */
+    function setupAboutButton() {
+        const aboutBtn = document.getElementById('about-btn');
+        if (!aboutBtn) {
+            Logger.error('About button not found');
+            return;
+        }
+
+        aboutBtn.addEventListener('click', function () {
+            const aboutModal = new bootstrap.Modal(document.getElementById('aboutModal'));
+            aboutModal.show();
+        });
+    }
+
+    /**
+     * Sets up the popup overlay for feature info
+     */
+    function setupPopup(map) {
+        const popupElement = document.getElementById('popup');
+        if (!popupElement) {
+            Logger.error('Popup element not found');
+            return null;
+        }
+
+        const popup = new ol.Overlay({
+            element: popupElement,
+            positioning: 'bottom-center',
+            stopEvent: false,
+            offset: [0, -10]
+        });
+
+        map.addOverlay(popup);
+
+        // Set up popup closer
+        const closer = document.getElementById('popup-closer');
+        if (closer) {
+            closer.onclick = function () {
+                popup.setPosition(undefined);
+                closer.blur();
+                return false;
+            };
+        }
+
+        return popup;
+    }
+
+    /**
+     * Sets up the identify tool for getting feature info
+     */
+    function setupIdentifyTool(map, popup, wmsLayers) {
+        let identifyActive = false;
+
+        const identifyBtn = document.getElementById('tool-identify');
+        if (!identifyBtn) {
+            Logger.error('Identify tool button not found');
+            return;
+        }
+
+        // Click handler for identifying features
+        function handleIdentifyClick(evt) {
+            if (identifyActive) {
+                showFeatureInfo(evt.pixel);
+            }
+        }
+
+        // Display feature info at a pixel
+        function showFeatureInfo(pixel) {
+            // Get the vector feature under the pixel
+            const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
+                return feature;
+            });
+
+            // Get map properties for the GetFeatureInfo request
+            const viewResolution = map.getView().getResolution();
+            const viewProjection = map.getView().getProjection();
+            const coordinate = map.getCoordinateFromPixel(pixel);
+
+            // Get all visible WMS layers
+            const visibleWmsLayers = wmsLayers.filter(layer => layer.getVisible());
+
+            if (visibleWmsLayers.length === 0) {
+                return;
+            }
+
+            // Try to get feature info for each visible layer
+            let foundLayer = false;
+
+            for (const layer of visibleWmsLayers) {
+                const source = layer.getSource();
+                const url = source.getFeatureInfoUrl(
+                    coordinate,
+                    viewResolution,
+                    viewProjection,
+                    {
+                        'INFO_FORMAT': 'application/json',
+                        'FEATURE_COUNT': 10
+                    }
+                );
+
+                if (url) {
+                    foundLayer = true;
+                    Logger.log("Запрос GetFeatureInfo URL:", url);
+
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('HTTP error ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            const content = document.getElementById('popup-content');
+
+                            if (data.features && data.features.length) {
+                                // Display feature info in popup
+                                let popupContent = '<div>';
+                                const feature = data.features[0];
+
+                                // Feature type/name
+                                popupContent += '<h5>' + layer.get('title') + '</h5>';
+
+                                // Properties table
+                                popupContent += '<table class="table table-sm">';
+                                for (const prop in feature.properties) {
+                                    if (prop !== 'bbox') { // Skip bounding box property
+                                        popupContent += '<tr>' +
+                                            '<th scope="row">' + prop + '</th>' +
+                                            '<td>' + feature.properties[prop] + '</td>' +
+                                            '</tr>';
+                                    }
+                                }
+                                popupContent += '</table></div>';
+
+                                content.innerHTML = popupContent;
+                                popup.setPosition(coordinate);
+                            }
+                        })
+                        .catch(error => {
+                            Logger.error('Error fetching feature info:', error);
+                        });
+
+                    break; // Exit once we've found a layer with data
+                }
+            }
+
+            if (!foundLayer) {
+                popup.setPosition(undefined);
+            }
+        }
+
+        // Toggle identify tool on button click
+        identifyBtn.addEventListener('click', function () {
+            identifyActive = !identifyActive;
+            this.classList.toggle('active');
+
+            if (identifyActive) {
+                // Add the click handler when tool is active
+                map.on('singleclick', handleIdentifyClick);
+            } else {
+                // Remove it when tool is deactivated
+                map.un('singleclick', handleIdentifyClick);
+            }
+        });
+    }
+
+    /**
+     * Sets up the measurement tool
+     */
+    function setupMeasurementTool(map) {
+        let measureActive = false;
+        let activeMeasurement = null;
+
+        const measureBtn = document.getElementById('tool-measure');
+        if (!measureBtn) {
+            Logger.error('Measure tool button not found');
+            return;
+        }
+
+        // Add measurement interaction to the map
+        function addMeasurementInteraction() {
+            const source = new ol.source.Vector();
+
+            const vector = new ol.layer.Vector({
+                source: source,
+                style: new ol.style.Style({
+                    fill: new ol.style.Fill({
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    }),
+                    stroke: new ol.style.Stroke({
+                        color: '#ffcc33',
+                        width: 2
+                    }),
+                    image: new ol.style.Circle({
+                        radius: 7,
+                        fill: new ol.style.Fill({
+                            color: '#ffcc33'
+                        })
+                    })
+                })
+            });
+
+            map.addLayer(vector);
+
+            // Create measuring tooltips
+            let measureTooltipElement = document.createElement('div');
+            measureTooltipElement.className = 'tooltip tooltip-measure';
+
+            let measureTooltip = new ol.Overlay({
+                element: measureTooltipElement,
+                offset: [0, -15],
+                positioning: 'bottom-center'
+            });
+
+            map.addOverlay(measureTooltip);
+
+            // Create draw interaction for measurements
+            const draw = new ol.interaction.Draw({
+                source: source,
+                type: 'LineString',
+                style: new ol.style.Style({
+                    fill: new ol.style.Fill({
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    }),
+                    stroke: new ol.style.Stroke({
+                        color: 'rgba(0, 0, 0, 0.5)',
+                        lineDash: [10, 10],
+                        width: 2
+                    }),
+                    image: new ol.style.Circle({
+                        radius: 5,
+                        stroke: new ol.style.Stroke({
+                            color: 'rgba(0, 0, 0, 0.7)'
+                        }),
+                        fill: new ol.style.Fill({
+                            color: 'rgba(255, 255, 255, 0.2)'
+                        })
+                    })
+                })
+            });
+
+            map.addInteraction(draw);
+
+            let listener;
+
+            // Format length measurement
+            function formatLength(line) {
+                const length = ol.sphere.getLength(line);
+
+                if (length > 1000) {
+                    return (Math.round(length / 1000 * 100) / 100) + ' km';
+                } else {
+                    return (Math.round(length * 100) / 100) + ' m';
+                }
+            }
+
+            // Format area measurement
+            function formatArea(polygon) {
+                const area = ol.sphere.getArea(polygon);
+
+                if (area > 10000) {
+                    return (Math.round(area / 1000000 * 100) / 100) + ' km²';
+                } else {
+                    return (Math.round(area * 100) / 100) + ' m²';
+                }
+            }
+
+            // Start drawing
+            draw.on('drawstart', function (evt) {
+                const sketch = evt.feature;
+                let tooltipCoord = evt.coordinate;
+
+                listener = sketch.getGeometry().on('change', function (evt) {
+                    const geom = evt.target;
+                    let output;
+
+                    if (geom instanceof ol.geom.Polygon) {
+                        output = formatArea(geom);
+                        tooltipCoord = geom.getInteriorPoint().getCoordinates();
+                    } else if (geom instanceof ol.geom.LineString) {
+                        output = formatLength(geom);
+                        tooltipCoord = geom.getLastCoordinate();
+                    }
+
+                    measureTooltipElement.innerHTML = output;
+                    measureTooltip.setPosition(tooltipCoord);
+                });
+            });
+
+            // End drawing
+            draw.on('drawend', function () {
+                measureTooltipElement.className = 'tooltip tooltip-static';
+                measureTooltip.setOffset([0, -7]);
+
+                // Create a new tooltip for next measurement
+                measureTooltipElement = document.createElement('div');
+                measureTooltipElement.className = 'tooltip tooltip-measure';
+
+                measureTooltip = new ol.Overlay({
+                    element: measureTooltipElement,
+                    offset: [0, -15],
+                    positioning: 'bottom-center'
+                });
+
+                map.addOverlay(measureTooltip);
+
+                ol.Observable.unByKey(listener);
+            });
+
+            // Return cleanup function
+            return function () {
+                map.removeInteraction(draw);
+                map.removeLayer(vector);
+
+                // Find all tooltips and remove them
+                const tooltipElements = document.querySelectorAll('.tooltip');
+                tooltipElements.forEach(el => {
+                    if (el.parentNode) {
+                        el.parentNode.removeChild(el);
+                    }
+                });
+
+                // Remove overlays with tooltip class
+                const overlays = map.getOverlays().getArray().slice();
+                overlays.forEach(overlay => {
+                    const element = overlay.getElement();
+                    if (element && element.classList &&
+                        (element.classList.contains('tooltip-measure') ||
+                            element.classList.contains('tooltip-static'))) {
+                        map.removeOverlay(overlay);
+                    }
+                });
+            };
+        }
+
+        // Toggle measurement tool on button click
+        measureBtn.addEventListener('click', function () {
+            measureActive = !measureActive;
+            this.classList.toggle('active');
+
+            if (measureActive) {
+                activeMeasurement = addMeasurementInteraction();
+            } else if (activeMeasurement) {
+                activeMeasurement();
+                activeMeasurement = null;
+            }
+        });
+    }
 });

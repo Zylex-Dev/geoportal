@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.3.0/ol.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <header class="bg-dark text-white py-3">
         <div class="container">
@@ -56,7 +58,7 @@
                             <label class="form-check-label" for="layer-kilns">Печи</label>
                         </div>
                     </div>
-                    
+
                     <div class="layer-group mt-3">
                         <h5>Инфраструктура</h5>
                         <div class="form-check">
@@ -64,7 +66,7 @@
                             <label class="form-check-label" for="layer-railways">Железные дороги</label>
                         </div>
                     </div>
-                    
+
                     <div class="layer-group mt-3">
                         <h5>Природные объекты</h5>
                         <div class="form-check">
@@ -81,7 +83,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mt-4">
                     <h4>Подложки</h4>
                     <select class="form-select" id="basemap-selector">
@@ -91,16 +93,16 @@
                         <option value="boundary">Векторная</option>
                     </select>
                 </div>
-                
+
                 <div class="mt-4">
                     <h4>Инструменты</h4>
                     <div class="btn-group d-flex" role="group">
-                        <button class="btn btn-outline-secondary" id="tool-measure">Измерить</button>
-                        <button class="btn btn-outline-secondary" id="tool-identify">Информация</button>
+                        <button class="btn btn-outline-secondary btn-tool" id="tool-measure">Измерить</button>
+                        <button class="btn btn-outline-secondary btn-tool" id="tool-identify">Информация</button>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Main map area -->
             <div class="col-md-9">
                 <div id="map"></div>
@@ -128,7 +130,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Геопортал объектов черной металлургии Челябинской области представляет собой интерактивную карту промышленных объектов региона с возможностью просмотра различных слоев и получения дополнительной информации.</p>
+                    <p>Геопортал объектов черной металлургии Челябинской области представляет собой интерактивную карту
+                        промышленных объектов региона с возможностью просмотра различных слоев и получения
+                        дополнительной информации.</p>
                     <p>Проект разработан с использованием следующих технологий:</p>
                     <ul>
                         <li>QGIS - для подготовки геоданных</li>
@@ -150,4 +154,5 @@
     <script src="https://cdn.jsdelivr.net/npm/ol@v7.3.0/dist/ol.js"></script>
     <script src="js/app.js"></script>
 </body>
+
 </html>
