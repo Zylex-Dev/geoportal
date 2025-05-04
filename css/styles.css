@@ -46,6 +46,8 @@ main {
   bottom: 12px;
   left: -50px;
   min-width: 280px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .ol-popup:after,
@@ -82,6 +84,45 @@ main {
 
 .ol-popup-closer:after {
   content: "✖";
+}
+
+.ol-popup table {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.ol-popup th {
+  max-width: 120px;
+  word-wrap: break-word;
+}
+
+.ol-popup td {
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
+.ol-popup h5 {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.ol-popup .show-more {
+  color: #007bff;
+  text-decoration: none;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ol-popup .show-all-props {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.ol-popup .truncated-value {
+  color: #333;
+  font-style: normal;
 }
 
 /* Layer Controls Styling
