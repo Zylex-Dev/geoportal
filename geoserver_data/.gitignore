@@ -1,0 +1,10 @@
+logs/
+gws/
+tmp/
+catalog/
+*.lock
+
+*.bak
+*.tmp
+*DS_Store
+Thumbs.db
