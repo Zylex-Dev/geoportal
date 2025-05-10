@@ -1,0 +1,17 @@
+<layer>
+  <name>industrial_mine</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fdd</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-34e9cd9b:19696b8f319:-7fc9</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fde</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:08:13.785 UTC</dateCreated>
+  <dateModified>2025-05-03 16:19:26.318 UTC</dateModified>
+</layer>

@@ -1,0 +1,17 @@
+<layer>
+  <name>water-polygon</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fcf</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-34e9cd9b:19696b8f319:-7fcc</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fd0</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:11:17.587 UTC</dateCreated>
+  <dateModified>2025-05-03 16:21:35.709 UTC</dateModified>
+</layer>

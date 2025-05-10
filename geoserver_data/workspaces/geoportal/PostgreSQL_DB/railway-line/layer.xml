@@ -1,0 +1,17 @@
+<layer>
+  <name>railway-line</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fe3</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-34e9cd9b:19696b8f319:-7fce</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fe4</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:06:48.257 UTC</dateCreated>
+  <dateModified>2025-05-03 16:20:57.975 UTC</dateModified>
+</layer>

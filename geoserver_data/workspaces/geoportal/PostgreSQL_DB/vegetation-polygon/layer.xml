@@ -1,0 +1,17 @@
+<layer>
+  <name>vegetation-polygon</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fd3</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-34e9cd9b:19696b8f319:-7fc7</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fd4</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:10:45.703 UTC</dateCreated>
+  <dateModified>2025-05-03 16:21:11.505 UTC</dateModified>
+</layer>

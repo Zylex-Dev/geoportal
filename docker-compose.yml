@@ -1,0 +1,52 @@
+services:
+  # Фронтенд на Nginx
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - geoserver
+    networks:
+      - geoportal-network
+
+  # GeoServer - официальный образ
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.27.0
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./geoserver_data:/opt/geoserver_data
+    environment:
+      - GEOSERVER_ADMIN_USER=admin
+      - GEOSERVER_ADMIN_PASSWORD=geoserver
+    networks:
+      - geoportal-network
+    restart: unless-stopped
+    depends_on:
+      - postgis
+
+  # PostgreSQL с расширением PostGIS
+  postgis:
+    image: postgis/postgis:15-3.4
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=geoportal
+    volumes:
+      - ./database/data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - geoportal-network
+    restart: unless-stopped
+    command: postgres -c listen_addresses='*'
+
+networks:
+  geoportal-network:
+    driver: bridge
+
+# volumes:
+#   postgres_data:

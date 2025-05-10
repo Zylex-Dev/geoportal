@@ -5,7 +5,8 @@
 
 export const CONFIG = {
     debug: true,
-    geoserverUrl: 'http://localhost:8080/geoserver/wms',
+    // Для прокси через nginx - '/geoserver/wms'
+    geoserverUrl: '/geoserver/wms',
     workspace: 'geoportal',
     // Default center coordinates for Chelyabinsk region
     defaultCenter: [60.6122, 55.1544],

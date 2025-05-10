@@ -1,0 +1,17 @@
+<layer>
+  <name>water-line</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fd1</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-34e9cd9b:19696b8f319:-7fcd</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fd2</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:11:03.583 UTC</dateCreated>
+  <dateModified>2025-05-03 16:21:26.902 UTC</dateModified>
+</layer>

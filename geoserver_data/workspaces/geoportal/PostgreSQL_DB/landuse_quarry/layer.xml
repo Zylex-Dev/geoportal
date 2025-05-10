@@ -1,0 +1,17 @@
+<layer>
+  <name>landuse_quarry</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fd7</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-34e9cd9b:19696b8f319:-7fca</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fd8</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:10:11.993 UTC</dateCreated>
+  <dateModified>2025-05-03 16:20:03.953 UTC</dateModified>
+</layer>

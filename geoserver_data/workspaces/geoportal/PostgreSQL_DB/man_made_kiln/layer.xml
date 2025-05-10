@@ -1,0 +1,17 @@
+<layer>
+  <name>man_made_kiln</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fdf</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-ab6b537:196971a5d40:-7fc0</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fe0</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:07:48.0 UTC</dateCreated>
+  <dateModified>2025-05-03 17:50:55.942 UTC</dateModified>
+</layer>

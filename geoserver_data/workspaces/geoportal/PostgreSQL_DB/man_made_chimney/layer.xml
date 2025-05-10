@@ -1,0 +1,17 @@
+<layer>
+  <name>man_made_chimney</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fe1</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-47157dac:1969715c2a0:-8000</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fe2</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:07:19.594 UTC</dateCreated>
+  <dateModified>2025-05-03 17:05:54.28 UTC</dateModified>
+</layer>

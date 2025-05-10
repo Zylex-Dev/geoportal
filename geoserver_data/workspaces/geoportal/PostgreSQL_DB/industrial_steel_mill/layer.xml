@@ -1,0 +1,17 @@
+<layer>
+  <name>industrial_steel_mill</name>
+  <id>LayerInfoImpl-34e9cd9b:19696b8f319:-7fdb</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-34e9cd9b:19696b8f319:-7fcb</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-34e9cd9b:19696b8f319:-7fdc</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-05-03 16:08:35.204 UTC</dateCreated>
+  <dateModified>2025-05-03 16:19:37.386 UTC</dateModified>
+</layer>
