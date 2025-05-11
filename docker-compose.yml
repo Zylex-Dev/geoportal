@@ -47,6 +47,3 @@ services:
 networks:
   geoportal-network:
     driver: bridge
-
-# volumes:
-#   postgres_data:

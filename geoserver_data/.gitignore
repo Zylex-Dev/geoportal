@@ -1,9 +1,13 @@
 logs/
 gws/
+gws_cache/
+gws-layers/
 tmp/
 catalog/
 *.lock
 
+*.log
+*.pid
 *.bak
 *.tmp
 *DS_Store
