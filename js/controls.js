@@ -52,6 +52,12 @@ export function setupLayerControls(layers) {
     connectLayerToCheckbox('layer-water-polygons', layers.naturalLayers.waterPolygons);
     connectLayerToCheckbox('layer-water-lines', layers.naturalLayers.waterLines);
     connectLayerToCheckbox('layer-vegetation', layers.naturalLayers.vegetation);
+    
+    // Установим слои по умолчанию скрытыми
+    Object.values(layers.industryLayers).forEach(layer => layer.setVisible(false));
+    Object.values(layers.infrastructureLayers).forEach(layer => layer.setVisible(false));
+    Object.values(layers.naturalLayers).forEach(layer => layer.setVisible(false));
+    layers.boundaryLayer.setVisible(false);
 }
 
 /**
@@ -69,7 +75,13 @@ export function connectLayerToCheckbox(checkboxId, layer) {
 
     // Add change event handler
     checkbox.addEventListener('change', function () {
-        layer.setVisible(this.checked);
+        // Только если чекбокс не отключен (disabled)
+        if (!this.disabled) {
+            layer.setVisible(this.checked);
+        } else {
+            // Если чекбокс отключен, слой всегда должен быть скрыт
+            layer.setVisible(false);
+        }
     });
 }
 
@@ -109,12 +121,20 @@ export function setupBaseMapSelector(map, layers) {
         } else if (value === 'topo') {
             layers.baseLayers.topo.setVisible(true);
         } else if (value === 'boundary') {
-            // For vector map, show natural layers
-            Object.values(layers.naturalLayers).forEach(layer => layer.setVisible(true));
-            naturalLayersVisible = true;
-            
-            // Update checkboxes to reflect layer visibility
-            updateCheckboxes(layers.naturalLayers);
+            // Проверим, что опция не отключена (disabled) - это значит, что пользователь авторизован
+            const boundaryOption = Array.from(selector.options).find(opt => opt.value === 'boundary');
+            if (!boundaryOption.disabled) {
+                // For vector map, show natural layers
+                Object.values(layers.naturalLayers).forEach(layer => layer.setVisible(true));
+                naturalLayersVisible = true;
+                
+                // Update checkboxes to reflect layer visibility
+                updateCheckboxes(layers.naturalLayers);
+            } else {
+                // Если опция недоступна, переключаемся на OSM
+                selector.value = 'osm';
+                layers.baseLayers.osm.setVisible(true);
+            }
         }
     });
 }

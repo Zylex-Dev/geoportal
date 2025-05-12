@@ -8,6 +8,7 @@ import { checkGeoServer } from './server.js';
 import { createMapLayers, setupLayerErrorHandlers, addLayersToMap } from './layers.js';
 import { createMapControls, setupLayerControls, setupBaseMapSelector } from './controls.js';
 import { setupPopupAndTools } from './tools.js';
+import { initAuthUI } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
@@ -15,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     Logger.log("Инициализация геопортала");
     Logger.log("GeoServer URL:", CONFIG.geoserverUrl);
     Logger.log("Workspace:", CONFIG.workspace);
+
+    // Инициализация UI авторизации
+    initAuthUI();
 
     // Создаем индикатор загрузки
     const loadingElement = document.createElement('div');

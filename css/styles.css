@@ -133,6 +133,36 @@ main {
   margin-bottom: 15px;
 }
 
+.disabled-layer-group {
+  border-left-color: #ccc;
+  opacity: 0.6;
+  position: relative;
+}
+
+.disabled-layer-group::before {
+  content: "Требуется авторизация";
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ffc107;
+  color: #333;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.disabled-layer-group h5 {
+  color: #6c757d;
+}
+
+/* Styling for disabled options */
+select option:disabled {
+  color: #6c757d;
+  font-style: italic;
+  background-color: #f8f9fa;
+}
+
 /* Measurement Tool Tooltips
 -------------------------------------------------- */
 .tooltip {
@@ -195,4 +225,58 @@ main {
   .layer-group {
     margin-bottom: 10px;
   }
+}
+
+/* Authentication Styles
+-------------------------------------------------- */
+#user-profile {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#user-display-name {
+  color: #98ff98;
+}
+
+#logout-btn {
+  transition: all 0.2s ease;
+}
+
+#logout-btn:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+/* Фикс для модальных окон */
+.modal-open {
+  padding-right: 0 !important;
+  overflow: auto !important;
+}
+
+#loginModal .nav-tabs .nav-link {
+  color: #495057;
+}
+
+#loginModal .nav-tabs .nav-link.active {
+  color: #007bff;
+  font-weight: 500;
+}
+
+#loginModal .alert-danger,
+#loginModal .alert-success {
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+#loginModal .alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+#loginModal form {
+  margin-top: 20px;
 }
