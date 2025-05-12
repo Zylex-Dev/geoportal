@@ -34,6 +34,9 @@ export function createMapControls() {
  * Настройка элементов управления слоями
  */
 export function setupLayerControls(layers) {
+    // Connect boundary layer checkbox
+    connectLayerToCheckbox('layer-boundary', layers.boundaryLayer);
+    
     // Connect industry layer checkboxes
     connectLayerToCheckbox('layer-industrial-areas', layers.industryLayers.industrialAreas);
     connectLayerToCheckbox('layer-steel-mills', layers.industryLayers.steelMills);
@@ -80,11 +83,23 @@ export function setupBaseMapSelector(map, layers) {
         return;
     }
 
+    // Store current natural layers visibility state
+    let naturalLayersVisible = false;
+
     selector.addEventListener('change', function () {
         const value = this.value;
 
         // Hide all base layers first
         Object.values(layers.baseLayers).forEach(layer => layer.setVisible(false));
+
+        // If switching from boundary map, turn off natural layers if they were auto-enabled
+        if (naturalLayersVisible && value !== 'boundary') {
+            Object.values(layers.naturalLayers).forEach(layer => layer.setVisible(false));
+            naturalLayersVisible = false;
+            
+            // Update checkboxes to reflect layer visibility
+            updateCheckboxes(layers.naturalLayers);
+        }
 
         // Show the selected base layer
         if (value === 'osm') {
@@ -96,7 +111,8 @@ export function setupBaseMapSelector(map, layers) {
         } else if (value === 'boundary') {
             // For vector map, show natural layers
             Object.values(layers.naturalLayers).forEach(layer => layer.setVisible(true));
-
+            naturalLayersVisible = true;
+            
             // Update checkboxes to reflect layer visibility
             updateCheckboxes(layers.naturalLayers);
         }

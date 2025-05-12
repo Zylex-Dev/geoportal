@@ -13,7 +13,7 @@ export function createMapLayers() {
     const baseLayers = createBaseLayers();
 
     // Create feature layers
-    const boundaryLayer = createWmsLayer('boundary-polygon', 'Boundary', true);
+    const boundaryLayer = createWmsLayer('boundary-polygon', 'Boundary', false);
     const industryLayers = createIndustryLayers();
     const infrastructureLayers = createInfrastructureLayers();
     const naturalLayers = createNaturalLayers();
@@ -104,12 +104,12 @@ export function createWmsLayer(layerName, title, visible = false) {
 }
 
 /**
- * Создает слои промышленных объектов
+ * Создает слои промышленных объектов   
  */
 export function createIndustryLayers() {
     return {
-        industrialAreas: createWmsLayer('landuse_industrial', 'Industrial Areas', true),
-        steelMills: createWmsLayer('industrial_steel_mill', 'Steel Mills', true),
+        industrialAreas: createWmsLayer('landuse_industrial', 'Industrial Areas', false),
+        steelMills: createWmsLayer('industrial_steel_mill', 'Steel Mills', false),
         mines: createWmsLayer('industrial_mine', 'Mines', false),
         quarries: createWmsLayer('landuse_quarry', 'Quarries', false),
         chimneys: createWmsLayer('man_made_chimney', 'Chimneys', false),

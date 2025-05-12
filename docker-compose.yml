@@ -8,6 +8,7 @@ services:
       - "80:80"
     depends_on:
       - geoserver
+      - auth_service
     networks:
       - geoportal-network
 
@@ -26,6 +27,19 @@ services:
     restart: unless-stopped
     depends_on:
       - postgis
+
+  # Сервис авторизации
+  auth_service:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgis
+    networks:
+      - geoportal-network
+    restart: unless-stopped
 
   # PostgreSQL с расширением PostGIS
   postgis:
