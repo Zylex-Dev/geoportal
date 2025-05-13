@@ -10,6 +10,9 @@ import { createMapControls, setupLayerControls, setupBaseMapSelector } from './c
 import { setupPopupAndTools } from './tools.js';
 import { initAuthUI } from './auth.js';
 
+// Объявляем переменную map в глобальной области видимости для экспорта
+let map;
+
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
@@ -22,22 +25,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Создаем индикатор загрузки
     const loadingElement = document.createElement('div');
-    loadingElement.innerHTML = 'Проверка подключения к GeoServer...';
-    loadingElement.style.position = 'absolute';
-    loadingElement.style.top = '50%';
-    loadingElement.style.left = '50%';
-    loadingElement.style.transform = 'translate(-50%, -50%)';
-    loadingElement.style.padding = '10px';
-    loadingElement.style.background = 'rgba(255, 255, 255, 0.8)';
-    loadingElement.style.borderRadius = '5px';
-    loadingElement.style.zIndex = '1000';
+    loadingElement.className = 'loading-indicator';
+    loadingElement.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Проверка подключения к GeoServer...';
     document.getElementById('map').appendChild(loadingElement);
 
     // Проверяем GeoServer перед инициализацией карты
     checkGeoServer()
         .then(initMap)
         .catch(error => {
-            loadingElement.innerHTML = 'Ошибка подключения к GeoServer:<br>' + error.message +
+            loadingElement.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Ошибка подключения к GeoServer:<br>' + error.message +
                 '<br><br>Проверьте, что GeoServer запущен и доступен по адресу:<br>' + CONFIG.geoserverUrl;
             loadingElement.style.color = 'red';
             loadingElement.style.maxWidth = '80%';
@@ -47,13 +43,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // Функция инициализации карты после проверки GeoServer
     function initMap() {
         Logger.log("Инициализация карты...");
-        loadingElement.innerHTML = 'Загрузка карты...';
+        loadingElement.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Загрузка карты...';
 
         // Создаем контролы для карты
         const controls = createMapControls();
 
         // Initialize map
-        const map = new ol.Map({
+        map = new ol.Map({
             target: 'map',
             controls: controls,
             view: new ol.View({
@@ -78,12 +74,26 @@ document.addEventListener('DOMContentLoaded', function () {
         setupBaseMapSelector(map, layers);
         setupPopupAndTools(map, layers);
 
+        // Загружаем дополнительные функции после инициализации карты
+        import('./extensions.js').then(module => {
+            Logger.log('Дополнительные функции успешно загружены');
+        }).catch(error => {
+            Logger.error('Ошибка при загрузке дополнительных функций:', error);
+        });
+
         // Remove loading indicator when map is ready
         map.once('rendercomplete', function () {
             if (loadingElement && loadingElement.parentNode) {
                 loadingElement.parentNode.removeChild(loadingElement);
             }
             Logger.log('Карта успешно отрендерена');
+            
+            // Добавляем классы анимации для плавного появления элементов
+            document.querySelector('.sidebar').classList.add('fade-in');
+            document.getElementById('map').classList.add('fade-in');
         });
     }
-}); 
+});
+
+// Экспортируем карту для использования в других модулях
+export { map }; 

@@ -4,6 +4,8 @@ FROM nginx:alpine
 RUN mkdir -p /usr/share/nginx/html/css
 RUN mkdir -p /usr/share/nginx/html/js
 RUN mkdir -p /usr/share/nginx/html/lib
+RUN mkdir -p /usr/share/nginx/html/fonts
+RUN mkdir -p /usr/share/nginx/html/fontawesome
 
 # Копируем HTML-файлы
 COPY index.html /usr/share/nginx/html/
@@ -11,6 +13,13 @@ COPY index.html /usr/share/nginx/html/
 # Копируем CSS и JS файлы
 COPY css/ /usr/share/nginx/html/css/
 COPY js/ /usr/share/nginx/html/js/
+
+# Копируем шрифты и FontAwesome
+COPY fonts/ /usr/share/nginx/html/fonts/
+COPY fontawesome/ /usr/share/nginx/html/fontawesome/
+
+# Копируем изображения
+COPY img/ /usr/share/nginx/html/img/
 
 # Создаем директории для библиотек
 WORKDIR /usr/share/nginx/html/lib
