@@ -1,3 +1,6 @@
+gwc/
+security/usergroup/default/users.xml
+security/role/default/roles.xml
 logs/
 gws/
 gws_cache/
