@@ -223,6 +223,35 @@
                                 <div class="mb-3">
                                     <label for="register-password" class="form-label">Пароль</label>
                                     <input type="password" class="form-control" id="register-password" required>
+                                    <div class="form-text">Пароль должен содержать минимум 8 символов, одну заглавную букву, одну строчную букву и одну цифру.</div>
+                                    <div id="password-strength-indicator" class="mt-2">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1 me-1">
+                                                <div class="progress" style="height: 5px;">
+                                                    <div id="password-length-check" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small>Длина (мин. 8)</small>
+                                            </div>
+                                            <div class="flex-grow-1 me-1">
+                                                <div class="progress" style="height: 5px;">
+                                                    <div id="password-uppercase-check" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small>Заглавная буква</small>
+                                            </div>
+                                            <div class="flex-grow-1 me-1">
+                                                <div class="progress" style="height: 5px;">
+                                                    <div id="password-lowercase-check" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small>Строчная буква</small>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="progress" style="height: 5px;">
+                                                    <div id="password-digit-check" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small>Цифра</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="register-password-confirm" class="form-label">Подтвердите пароль</label>

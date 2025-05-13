@@ -27,7 +27,19 @@ export async function loginUser(username, password) {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Ошибка авторизации');
+            let errorMessage = 'Ошибка авторизации';
+            
+            if (error.detail) {
+                if (typeof error.detail === 'string') {
+                    errorMessage = error.detail;
+                } else if (Array.isArray(error.detail)) {
+                    errorMessage = error.detail.map(err => err.msg).join(', ');
+                } else if (typeof error.detail === 'object') {
+                    errorMessage = Object.values(error.detail).join(', ');
+                }
+            }
+            
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
@@ -60,9 +72,33 @@ export async function registerUser(username, email, password) {
             })
         });
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Ошибка регистрации');
+            let errorMessage = 'Ошибка регистрации';
+            
+            if (responseData.detail) {
+                // Обработка разных форматов ошибок API
+                if (typeof responseData.detail === 'string') {
+                    errorMessage = responseData.detail;
+                } else if (Array.isArray(responseData.detail)) {
+                    // Обработка валидационных ошибок Pydantic
+                    const errors = responseData.detail.map(err => {
+                        // Получаем поле с ошибкой и сообщение об ошибке
+                        const field = err.loc.slice(-1)[0];
+                        const fieldName = {
+                            'username': 'Имя пользователя',
+                            'email': 'Email',
+                            'password': 'Пароль'
+                        }[field] || field;
+                        
+                        return `${fieldName}: ${err.msg}`;
+                    });
+                    errorMessage = errors.join('\n');
+                }
+            }
+            
+            throw new Error(errorMessage);
         }
 
         return { success: true };
@@ -145,6 +181,30 @@ export function initAuthUI() {
     // Настройка отображения в зависимости от состояния аутентификации
     updateAuthState();
     
+    // Добавляем обработчики событий для валидации полей ввода
+    const passwordInput = document.getElementById('register-password');
+    const confirmPasswordInput = document.getElementById('register-password-confirm');
+    
+    // Валидация пароля при вводе
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            validatePasswordField(this);
+        });
+    }
+    
+    // Валидация подтверждения пароля при вводе
+    if (confirmPasswordInput && passwordInput) {
+        confirmPasswordInput.addEventListener('input', function() {
+            if (this.value !== passwordInput.value) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+    
     // Обработчик клика на информационную ссылку логина в баннере
     if (loginInfoLink) {
         loginInfoLink.addEventListener('click', function(e) {
@@ -193,6 +253,20 @@ export function initAuthUI() {
         // Скрываем предыдущие ошибки
         errorDisplay.classList.add('d-none');
         
+        // Проверка валидности имени пользователя
+        if (username.length < 3) {
+            errorDisplay.innerHTML = 'Имя пользователя должно содержать минимум 3 символа';
+            errorDisplay.classList.remove('d-none');
+            return;
+        }
+        
+        // Проверка длины пароля
+        if (password.length < 8) {
+            errorDisplay.innerHTML = 'Пароль должен содержать минимум 8 символов';
+            errorDisplay.classList.remove('d-none');
+            return;
+        }
+        
         // Показываем индикатор загрузки
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerText;
@@ -211,8 +285,9 @@ export function initAuthUI() {
             updateAuthState();
             loginForm.reset();
         } else {
-            // Ошибка
-            errorDisplay.textContent = result.message || 'Неверное имя пользователя или пароль';
+            // Ошибка - правильно форматируем сообщение, заменяя переносы строк на <br>
+            const errorMessage = result.message || 'Неверное имя пользователя или пароль';
+            errorDisplay.innerHTML = errorMessage.replace(/\n/g, '<br>');
             errorDisplay.classList.remove('d-none');
         }
     });
@@ -226,13 +301,44 @@ export function initAuthUI() {
         const password = document.getElementById('register-password').value;
         const passwordConfirm = document.getElementById('register-password-confirm').value;
         const errorDisplay = document.getElementById('register-error');
+        const passwordField = document.getElementById('register-password');
         
         // Скрываем предыдущие ошибки
         errorDisplay.classList.add('d-none');
+        errorDisplay.classList.remove('alert-success');
+        errorDisplay.classList.add('alert-danger');
         
         // Проверка совпадения паролей
         if (password !== passwordConfirm) {
-            errorDisplay.textContent = 'Пароли не совпадают';
+            errorDisplay.innerHTML = 'Пароли не совпадают';
+            errorDisplay.classList.remove('d-none');
+            return;
+        }
+        
+        // Проверка валидности имени пользователя
+        if (username.length < 3 || username.length > 50) {
+            errorDisplay.innerHTML = 'Имя пользователя должно содержать от 3 до 50 символов';
+            errorDisplay.classList.remove('d-none');
+            return;
+        }
+        
+        // Проверка силы пароля с использованием функции валидации
+        if (!validatePasswordField(passwordField)) {
+            const errors = [];
+            if (password.length < 8) {
+                errors.push('Пароль должен содержать минимум 8 символов');
+            }
+            if (!/[A-Z]/.test(password)) {
+                errors.push('Пароль должен содержать как минимум одну заглавную букву');
+            }
+            if (!/[a-z]/.test(password)) {
+                errors.push('Пароль должен содержать как минимум одну строчную букву');
+            }
+            if (!/[0-9]/.test(password)) {
+                errors.push('Пароль должен содержать как минимум одну цифру');
+            }
+            
+            errorDisplay.innerHTML = errors.join('<br>');
             errorDisplay.classList.remove('d-none');
             return;
         }
@@ -254,7 +360,7 @@ export function initAuthUI() {
             registerForm.reset();
             
             // Показываем сообщение об успешной регистрации и переключаемся на вкладку входа
-            errorDisplay.textContent = 'Регистрация успешна! Теперь вы можете войти.';
+            errorDisplay.innerHTML = 'Регистрация успешна! Теперь вы можете войти.';
             errorDisplay.classList.remove('d-none');
             errorDisplay.classList.remove('alert-danger');
             errorDisplay.classList.add('alert-success');
@@ -264,11 +370,10 @@ export function initAuthUI() {
                 document.getElementById('login-tab').click();
             }, 1500);
         } else {
-            // Ошибка
-            errorDisplay.textContent = result.message || 'Ошибка при регистрации';
+            // Ошибка - правильно форматируем сообщение, заменяя переносы строк на <br>
+            const errorMessage = result.message || 'Ошибка при регистрации';
+            errorDisplay.innerHTML = errorMessage.replace(/\n/g, '<br>');
             errorDisplay.classList.remove('d-none');
-            errorDisplay.classList.add('alert-danger');
-            errorDisplay.classList.remove('alert-success');
         }
     });
     
@@ -382,4 +487,55 @@ function updateLayersAccess(isAuthorized) {
             });
         }
     }
+}
+
+/**
+ * Валидация поля пароля
+ * @param {HTMLInputElement} passwordField - поле ввода пароля
+ * @return {boolean} - результат валидации
+ */
+function validatePasswordField(passwordField) {
+    const value = passwordField.value;
+    const isLengthValid = value.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(value);
+    const hasLowerCase = /[a-z]/.test(value);
+    const hasDigit = /[0-9]/.test(value);
+    
+    const isValid = isLengthValid && hasUpperCase && hasLowerCase && hasDigit;
+    
+    // Обновляем индикаторы силы пароля
+    const lengthCheck = document.getElementById('password-length-check');
+    const uppercaseCheck = document.getElementById('password-uppercase-check');
+    const lowercaseCheck = document.getElementById('password-lowercase-check');
+    const digitCheck = document.getElementById('password-digit-check');
+    
+    if (lengthCheck) {
+        lengthCheck.style.width = isLengthValid ? '100%' : '0%';
+        lengthCheck.className = isLengthValid ? 'progress-bar bg-success' : 'progress-bar bg-danger';
+    }
+    
+    if (uppercaseCheck) {
+        uppercaseCheck.style.width = hasUpperCase ? '100%' : '0%';
+        uppercaseCheck.className = hasUpperCase ? 'progress-bar bg-success' : 'progress-bar bg-danger';
+    }
+    
+    if (lowercaseCheck) {
+        lowercaseCheck.style.width = hasLowerCase ? '100%' : '0%';
+        lowercaseCheck.className = hasLowerCase ? 'progress-bar bg-success' : 'progress-bar bg-danger';
+    }
+    
+    if (digitCheck) {
+        digitCheck.style.width = hasDigit ? '100%' : '0%';
+        digitCheck.className = hasDigit ? 'progress-bar bg-success' : 'progress-bar bg-danger';
+    }
+    
+    if (isValid) {
+        passwordField.classList.remove('is-invalid');
+        passwordField.classList.add('is-valid');
+    } else {
+        passwordField.classList.add('is-invalid');
+        passwordField.classList.remove('is-valid');
+    }
+    
+    return isValid;
 } 
