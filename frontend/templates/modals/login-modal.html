@@ -1,0 +1,133 @@
+<!-- Modal for Login -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel"><i class="fas fa-user-circle me-2"></i>Авторизация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="authTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-tab-pane" 
+                                type="button" role="tab" aria-controls="login-tab-pane" aria-selected="true">
+                                <i class="fas fa-sign-in-alt me-1"></i> Вход
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-tab-pane" 
+                                type="button" role="tab" aria-controls="register-tab-pane" aria-selected="false">
+                                <i class="fas fa-user-plus me-1"></i> Регистрация
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content pt-3" id="authTabsContent">
+                    <!-- Login Form -->
+                    <div class="tab-pane fade show active" id="login-tab-pane" role="tabpanel" aria-labelledby="login-tab" tabindex="0">
+                        <form id="login-form">
+                            <div class="alert alert-danger d-none" id="login-error"></div>
+                            <div class="mb-3">
+                                <label for="login-username" class="form-label">
+                                    <i class="fas fa-user me-1"></i> Имя пользователя
+                                </label>
+                                <input type="text" class="form-control" id="login-username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="login-password" class="form-label">
+                                    <i class="fas fa-lock me-1"></i> Пароль
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="login-password" required>
+                                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-1"></i> Войти
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Register Form -->
+                    <div class="tab-pane fade" id="register-tab-pane" role="tabpanel" aria-labelledby="register-tab" tabindex="0">
+                        <form id="register-form">
+                            <div class="alert alert-danger d-none" id="register-error"></div>
+                            <div class="mb-3">
+                                <label for="register-username" class="form-label">
+                                    <i class="fas fa-user me-1"></i> Имя пользователя
+                                </label>
+                                <input type="text" class="form-control" id="register-username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="register-email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i> Электронная почта
+                                </label>
+                                <input type="email" class="form-control" id="register-email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="register-password" class="form-label">
+                                    <i class="fas fa-lock me-1"></i> Пароль
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="register-password" required>
+                                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Пароль должен содержать минимум 8 символов, одну заглавную букву, одну строчную букву и одну цифру.</div>
+                                <div id="password-strength-indicator" class="mt-2">
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1 me-1">
+                                            <div class="progress" style="height: 5px;">
+                                                <div id="password-length-check" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                            <small>Длина (мин. 8)</small>
+                                        </div>
+                                        <div class="flex-grow-1 me-1">
+                                            <div class="progress" style="height: 5px;">
+                                                <div id="password-uppercase-check" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                            <small>Заглавная буква</small>
+                                        </div>
+                                        <div class="flex-grow-1 me-1">
+                                            <div class="progress" style="height: 5px;">
+                                                <div id="password-lowercase-check" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                            <small>Строчная буква</small>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="progress" style="height: 5px;">
+                                                <div id="password-digit-check" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                            <small>Цифра</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="register-password-confirm" class="form-label">
+                                    <i class="fas fa-lock me-1"></i> Подтвердите пароль
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="register-password-confirm" required>
+                                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-user-plus me-1"></i> Зарегистрироваться
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,94 @@
+<div class="col-md-3 sidebar">
+    <h4><i class="fas fa-layer-group me-2"></i>Слои</h4>
+    <div id="auth-info-banner" class="alert mb-3">
+        <i class="fas fa-lock me-2"></i> Для доступа ко всем слоям и функциям <a href="#" id="login-info-link">авторизуйтесь</a>
+    </div>
+    <div class="layer-groups">
+        <div class="layer-group">
+            <h5><i class="fas fa-map me-2"></i>Административные границы</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-boundary">
+                <label class="form-check-label" for="layer-boundary">Граница области</label>
+            </div>
+        </div>
+
+        <div class="layer-group">
+            <h5><i class="fas fa-industry me-2"></i>Промышленные объекты</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-industrial-areas">
+                <label class="form-check-label" for="layer-industrial-areas">Промышленные зоны</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-steel-mills">
+                <label class="form-check-label" for="layer-steel-mills">Металлургические заводы</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-mines">
+                <label class="form-check-label" for="layer-mines">Шахты</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-quarries">
+                <label class="form-check-label" for="layer-quarries">Карьеры</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-chimneys">
+                <label class="form-check-label" for="layer-chimneys">Промышленные трубы</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-kilns">
+                <label class="form-check-label" for="layer-kilns">Печи</label>
+            </div>
+        </div>
+
+        <div class="layer-group mt-3">
+            <h5><i class="fas fa-road me-2"></i>Инфраструктура</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-railways">
+                <label class="form-check-label" for="layer-railways">Железные дороги</label>
+            </div>
+        </div>
+
+        <div class="layer-group mt-3">
+            <h5><i class="fas fa-tree me-2"></i>Природные объекты</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-water-polygons">
+                <label class="form-check-label" for="layer-water-polygons">Водоемы</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-water-lines">
+                <label class="form-check-label" for="layer-water-lines">Реки</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="layer-vegetation">
+                <label class="form-check-label" for="layer-vegetation">Растительность</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4><i class="fas fa-globe me-2"></i>Подложки</h4>
+        <select class="form-select" id="basemap-selector">
+            <option value="osm">OpenStreetMap</option>
+            <option value="satellite">Спутник</option>
+            <option value="topo">Топографическая</option>
+            <option value="boundary">Векторная</option>
+        </select>
+    </div>
+
+    <div class="mt-4">
+        <h4><i class="fas fa-tools me-2"></i>Инструменты</h4>
+        <div class="btn-group d-flex" role="group">
+            <button class="btn btn-outline-secondary btn-tool" id="tool-measure">
+                <i class="fas fa-ruler me-1"></i> Измерить
+            </button>
+            <button class="btn btn-outline-secondary btn-tool" id="tool-identify">
+                <i class="fas fa-info-circle me-1"></i> Информация
+            </button>
+        </div>
+        <div class="mt-3">
+            <button class="btn btn-outline-secondary btn-tool w-100" id="tool-screenshot">
+                <i class="fas fa-camera me-1"></i> Снимок карты
+            </button>
+        </div>
+    </div>
+</div> 
