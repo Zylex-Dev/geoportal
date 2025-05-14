@@ -1,0 +1,59 @@
+/* Layout Styles - Header, Footer, Containers
+-------------------------------------------------- */
+header {
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-dark));
+  box-shadow: var(--box-shadow);
+  position: relative;
+  z-index: 100;
+}
+
+header h1 {
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  font-size: 1.8rem;
+}
+
+header .lead {
+  font-weight: 300;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+footer {
+  background: var(--secondary-color);
+  font-size: 0.9rem;
+}
+
+#map {
+  width: 100%;
+  height: calc(100vh - 130px);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+.sidebar {
+  background-color: white;
+  height: calc(100vh - 130px);
+  overflow-y: auto;
+  border-radius: var(--border-radius);
+  padding: 1.5rem !important;
+  box-shadow: var(--box-shadow);
+}
+
+.sidebar h4 {
+  color: var(--secondary-color);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.author-info {
+  padding: 15px;
+  background-color: rgba(44, 62, 80, 0.05);
+  border-radius: var(--border-radius);
+  margin-top: 20px;
+} 

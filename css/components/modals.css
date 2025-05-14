@@ -1,0 +1,80 @@
+/* Modal Styling
+-------------------------------------------------- */
+.modal-content {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.modal-header {
+  background-color: var(--primary-color);
+  color: white;
+  border-bottom: none;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: none;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+#loginModal .nav-tabs {
+  border-bottom: none;
+  margin-bottom: 1rem;
+}
+
+#loginModal .nav-tabs .nav-link {
+  color: var(--secondary-color);
+  font-weight: 500;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+#loginModal .nav-tabs .nav-link.active {
+  color: white;
+  background-color: var(--primary-color);
+  border: none;
+}
+
+#loginModal .nav-tabs .nav-link:hover:not(.active) {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+#loginModal .alert-danger,
+#loginModal .alert-success {
+  border-radius: var(--border-radius);
+  padding: 0.7rem 1rem;
+  margin-bottom: 1rem;
+  animation: alert-appear 0.3s ease-out;
+}
+
+@keyframes alert-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#loginModal .alert-success {
+  background-color: rgba(46, 204, 113, 0.2);
+  border-color: var(--success-color);
+  color: #2c7a50;
+}
+
+#loginModal form {
+  padding: 0.5rem 0;
+} 

@@ -1,0 +1,64 @@
+/* Responsive Adjustments
+-------------------------------------------------- */
+@media (max-width: 992px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+  
+  header .lead {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    height: auto;
+    max-height: 350px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+
+  #map {
+    height: calc(100vh - 480px);
+    min-height: 400px;
+  }
+
+  .layer-group {
+    margin-bottom: 15px;
+    padding-left: 10px;
+  }
+  
+  header h1 {
+    font-size: 1.3rem;
+    text-align: center;
+  }
+  
+  header .lead {
+    text-align: center;
+  }
+  
+  #auth-buttons, #user-profile {
+    margin-top: 10px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .sidebar {
+    max-height: 300px;
+  }
+  
+  #map {
+    height: calc(100vh - 430px);
+    min-height: 350px;
+  }
+  
+  .ol-popup {
+    min-width: 250px;
+    max-width: 90vw;
+  }
+  
+  header h1 {
+    font-size: 1.2rem;
+  }
+} 

@@ -1,7 +1,12 @@
 FROM nginx:alpine
 
 # Создаем рабочие директории
-RUN mkdir -p /usr/share/nginx/html/css
+RUN mkdir -p /usr/share/nginx/html/css/base
+RUN mkdir -p /usr/share/nginx/html/css/layout
+RUN mkdir -p /usr/share/nginx/html/css/components
+RUN mkdir -p /usr/share/nginx/html/css/features/map
+RUN mkdir -p /usr/share/nginx/html/css/features/auth
+RUN mkdir -p /usr/share/nginx/html/css/features/tools
 RUN mkdir -p /usr/share/nginx/html/js
 RUN mkdir -p /usr/share/nginx/html/lib
 RUN mkdir -p /usr/share/nginx/html/fonts

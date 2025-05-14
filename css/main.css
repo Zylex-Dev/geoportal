@@ -1,0 +1,42 @@
+/* Main CSS file that imports all modules
+-------------------------------------------------- */
+
+/* Base styles
+-------------------------------------------------- */
+/* Fonts */
+@import 'base/fonts.css';
+
+/* Base variables, reset, typography */
+@import 'base/base.css';
+
+/* Animations and effects */
+@import 'base/animations.css';
+
+/* Layout styles
+-------------------------------------------------- */
+/* Main layout structure */
+@import 'layout/layout.css';
+
+/* Responsive adjustments */
+@import 'layout/responsive.css';
+
+/* Components
+-------------------------------------------------- */
+/* UI components (buttons, forms, etc) */
+@import 'components/components.css';
+
+/* Modal windows */
+@import 'components/modals.css';
+
+/* Feature modules
+-------------------------------------------------- */
+/* Map features */
+@import 'features/map/map.css';
+@import 'features/map/popup.css';
+@import 'features/map/layers.css';
+
+/* Authentication features */
+@import 'features/auth/auth.css';
+
+/* Tools */
+@import 'features/tools/tools.css'; 

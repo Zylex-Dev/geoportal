@@ -1,0 +1,105 @@
+/* Common UI Components
+-------------------------------------------------- */
+.btn {
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-light {
+  border-width: 2px;
+}
+
+.btn-outline-light:hover {
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+  border-color: #c0392b;
+}
+
+.form-select, .form-control {
+  border-radius: var(--border-radius);
+  border: 1px solid #ddd;
+  padding: 0.6rem 1rem;
+  transition: var(--transition);
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.form-check-input {
+  cursor: pointer;
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-group {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.tech-stack .badge {
+  font-size: 0.85rem;
+  padding: 0.5rem 0.7rem;
+  background-color: var(--secondary-color);
+  transition: var(--transition);
+  cursor: default;
+}
+
+.tech-stack .badge:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+#search-input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#search-button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.search-result {
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.search-result:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.search-result .btn {
+  opacity: 0.8;
+  transition: var(--transition);
+}
+
+.search-result:hover .btn {
+  opacity: 1;
+} 

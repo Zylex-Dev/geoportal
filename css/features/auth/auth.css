@@ -1,0 +1,57 @@
+/* Authentication Styles
+-------------------------------------------------- */
+#user-profile {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#user-display-name {
+  color: #98ff98;
+  font-weight: 500;
+}
+
+#logout-btn {
+  transition: var(--transition);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+#logout-btn:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-2px);
+}
+
+#auth-info-banner {
+  background-color: rgba(241, 196, 15, 0.2);
+  border: 1px solid var(--warning-color);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+}
+
+#login-info-link {
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+#login-info-link:hover {
+  text-decoration: underline;
+}
+
+/* Password Strength Indicator */
+#password-strength-indicator .progress {
+  height: 5px;
+  border-radius: 10px;
+  margin-bottom: 3px;
+}
+
+#password-strength-indicator .progress-bar {
+  transition: width 0.3s ease;
+}
+
+#password-strength-indicator small {
+  font-size: 0.75rem;
+  color: #666;
+} 
