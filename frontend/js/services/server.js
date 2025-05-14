@@ -3,7 +3,7 @@
  * Отвечает за проверку соединения с сервером
  */
 
-import { CONFIG, Logger } from './config.js';
+import { CONFIG, Logger } from '../core/config.js';
 
 /**
  * Проверяет доступность GeoServer перед инициализацией карты

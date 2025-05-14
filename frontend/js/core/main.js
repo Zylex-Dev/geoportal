@@ -4,11 +4,11 @@
  */
 
 import { CONFIG, Logger } from './config.js';
-import { checkGeoServer } from './server.js';
-import { createMapLayers, setupLayerErrorHandlers, addLayersToMap } from './layers.js';
-import { createMapControls, setupLayerControls, setupBaseMapSelector } from './controls.js';
-import { setupPopupAndTools } from './tools.js';
-import { initAuthUI } from './auth.js';
+import { checkGeoServer } from '../services/server.js';
+import { createMapLayers, setupLayerErrorHandlers, addLayersToMap } from '../map/layers.js';
+import { createMapControls, setupLayerControls, setupBaseMapSelector } from '../map/controls.js';
+import { setupPopupAndTools } from '../map/tools.js';
+import { initAuthUI } from '../services/auth.js';
 
 // Объявляем переменную map в глобальной области видимости для экспорта
 let map;
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setupPopupAndTools(map, layers);
 
         // Загружаем дополнительные функции после инициализации карты
-        import('./extensions.js').then(module => {
+        import('../utils/extensions.js').then(module => {
             Logger.log('Дополнительные функции успешно загружены');
         }).catch(error => {
             Logger.error('Ошибка при загрузке дополнительных функций:', error);

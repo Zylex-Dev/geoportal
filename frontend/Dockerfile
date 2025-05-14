@@ -8,7 +8,7 @@ COPY frontend/build_html.py /app/
 WORKDIR /app
 RUN chmod +x build_html.py && ./build_html.py
 
-FROM nginx:alpinedoc
+FROM nginx:alpine
 
 # Создаем рабочие директории
 RUN mkdir -p /usr/share/nginx/html/css/base
@@ -17,7 +17,11 @@ RUN mkdir -p /usr/share/nginx/html/css/components
 RUN mkdir -p /usr/share/nginx/html/css/features/map
 RUN mkdir -p /usr/share/nginx/html/css/features/auth
 RUN mkdir -p /usr/share/nginx/html/css/features/tools
-RUN mkdir -p /usr/share/nginx/html/js
+# Создаем директории для JS модулей
+RUN mkdir -p /usr/share/nginx/html/js/core
+RUN mkdir -p /usr/share/nginx/html/js/map
+RUN mkdir -p /usr/share/nginx/html/js/services
+RUN mkdir -p /usr/share/nginx/html/js/utils
 RUN mkdir -p /usr/share/nginx/html/lib
 RUN mkdir -p /usr/share/nginx/html/fonts
 RUN mkdir -p /usr/share/nginx/html/fontawesome
@@ -28,7 +32,13 @@ COPY --from=builder /app/index.html /usr/share/nginx/html/
 
 # Копируем CSS и JS файлы
 COPY frontend/css/ /usr/share/nginx/html/css/
-COPY frontend/js/ /usr/share/nginx/html/js/
+# Копируем JS файлы с сохранением структуры директорий
+COPY frontend/js/index.js /usr/share/nginx/html/js/
+COPY frontend/js/README.md /usr/share/nginx/html/js/
+COPY frontend/js/core/ /usr/share/nginx/html/js/core/
+COPY frontend/js/map/ /usr/share/nginx/html/js/map/
+COPY frontend/js/services/ /usr/share/nginx/html/js/services/
+COPY frontend/js/utils/ /usr/share/nginx/html/js/utils/
 
 # Копируем шрифты и FontAwesome
 COPY frontend/fonts/ /usr/share/nginx/html/fonts/

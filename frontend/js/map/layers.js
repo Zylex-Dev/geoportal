@@ -3,7 +3,7 @@
  * Отвечает за создание и управление слоями
  */
 
-import { CONFIG, Logger } from './config.js';
+import { CONFIG, Logger } from '../core/config.js';
 
 /**
  * Создает все слои карты

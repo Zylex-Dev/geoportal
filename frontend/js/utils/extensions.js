@@ -5,7 +5,7 @@
  * - Информация о масштабе
  */
 
-import { map } from './main.js';
+import { map } from '../core/main.js';
 
 // Переключатель для показа/скрытия пароля
 document.querySelectorAll('.toggle-password').forEach(button => {

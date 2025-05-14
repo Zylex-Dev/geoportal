@@ -2,7 +2,7 @@
  * Модуль авторизации и управления пользователями
  */
 
-import { CONFIG, Logger } from './config.js';
+import { CONFIG, Logger } from '../core/config.js';
 
 // URL сервиса авторизации
 const AUTH_API_URL = 'http://localhost:8000';
