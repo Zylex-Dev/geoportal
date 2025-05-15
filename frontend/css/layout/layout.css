@@ -15,6 +15,7 @@ header h1 {
 
 header .lead {
   font-weight: 300;
+  color: var(--text-light);
   font-size: 1rem;
   opacity: 0.9;
 }
